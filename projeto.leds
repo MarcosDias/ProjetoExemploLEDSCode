@@ -1,0 +1,71 @@
+project clinica {
+    infrastructure{
+        basePackage = "com.exemplo.clinicaVeterinaria"
+        projectVersion = "0.0.0"
+        language = {@name: "Java", @version: "8"}
+        framework = {@name: "SpringRoo", @version: "1.2"}
+        orm = {@name: "HIBERNATE", @version: "3"}
+        database = {
+            @version: "5", 
+            @name: "HYPERSONIC_IN_MEMORY", 
+            //@user: "USER", @pass: "123456", @host: "localhost", @env: "prod",
+        }
+    }
+  
+    interface ifaceClinica  {
+        HtmlView interfaceWeb => appPetClinica
+        RestFull interfaceRest => appPetClinica
+    }
+  
+    application appPetClinica{
+        composedBy domPetClinica.*
+    }
+    
+    domain domPetClinica {
+        module main {
+            enum TipoAnimal {
+                Cachorro, gato, passaro
+            }
+            enum Especialista {
+                Cardiologista, Dentista, Nutricionista
+            }
+            service aplClinica {
+				findByNameDono => Dono.repo.findByName
+			}            
+            entity Animal{
+              private String nome @min(2)
+              private float peso @min(0) @null(false)
+              private float altura @min(0) @null(false)
+              private int idade @between(0, 100) @null(false)
+              private TipoAnimal tipo
+            }
+            entity Visita{
+                String descricao @max(255) @null(true)
+                Datetime dataVisita @null(false)
+                Animal animal 
+                Veterinario veterinario
+            }
+            protected abstract entity Pessoa{
+                String nome @min(3) @null(false)
+                String endereco @null(false) @max(250)
+                String tel @null(false) @between(8, 25)
+                String site @null(true)
+                String email @between(7,255) @null(false)
+                Datetime dataNascimento @null(true)
+                 
+            }
+            entity Veterinario ext Pessoa{
+                boolean empregadoDesde @null(true) 
+                Especialista especialista @null(false)
+            }
+            
+            entity Dono ext Pessoa{
+                List<Animal> animais @null(false)
+                
+                repository repo{
+                	findByName(String name) : Dono
+                }
+            }
+        }
+    }
+}
